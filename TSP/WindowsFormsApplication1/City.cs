@@ -29,6 +29,7 @@ namespace TSP
         private double _X;
         private double _Y;
         private double _elevation;
+        private int _position;
         private const double SCALE_FACTOR = 1000;
 
         // These are C# property accessors
@@ -44,6 +45,11 @@ namespace TSP
             set { _Y = value; }
         }
 
+        public int position
+        {
+            get { return _position;  }
+            set { _position = value;  }
+        }
 
         /// <summary>
         /// How much does it cost to get from this city to the destination?

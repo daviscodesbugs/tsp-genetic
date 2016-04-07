@@ -210,12 +210,18 @@ namespace TSP
             if (_mode == HardMode.Modes.Easy)
             {
                 for (int i = 0; i < _size; i++)
+                {
                     Cities[i] = new City(rnd.NextDouble(), rnd.NextDouble());
+                    Cities[i].position = i;
+                }
             }
             else // Medium and hard
             {
                 for (int i = 0; i < _size; i++)
+                {
                     Cities[i] = new City(rnd.NextDouble(), rnd.NextDouble(), rnd.NextDouble() * City.MAX_ELEVATION);
+                    Cities[i].position = i;
+                }
             }
 
             HardMode mm = new HardMode(this._mode, this.rnd, Cities);
@@ -697,27 +703,229 @@ namespace TSP
         {
             string[] results = new string[3];
 
-            // TODO: Add your implementation for a greedy solver here.
+            Stopwatch greedyTimer = new Stopwatch();
+            greedyTimer.Start();
+            bssf = GreedyImplementation(0);
+            greedyTimer.Stop();
 
-            results[COST] = "not implemented";    // load results into array here, replacing these dummy values
-            results[TIME] = "-1";
-            results[COUNT] = "-1";
+            results[COST] = "" + bssf.costOfRoute();    // load results into array here, replacing these dummy values
+            results[TIME] = greedyTimer.Elapsed.ToString();
+            results[COUNT] = "1";
 
             return results;
+        }
+
+        private TSPSolution GreedyImplementation(int start)
+        {
+            //find our bssf and start at node 0
+            //Uses a greedy algorithm that takes the closest node and continues on.
+            //If in the hard version we end up getting stuck with an infinite route, we start on a different node
+            //and run the greedy algorithm again.
+            //If none of the nodes produces a viable solution, we run the default algoritm which finds a random route.
+            List<int> route;
+            //min keeps track of the smallest route we've found so far
+            double min;
+            //already gone keeps track of what cities we have already gone to to not look at those again
+            bool[] citiesVisited;
+            double tempCost;
+            int tempIndex;
+            int currentCity = -1;
+            //if fail is true then we found an infinite route and nee
+            bool fail;
+            do //it is unlikely but we could have to run through all cities, and then go to the default solution so this could take speed O(n^3) with space complexity of O(n) for arrays and list
+            {
+
+                fail = false;
+                currentCity++;
+                citiesVisited = new bool[Cities.Length];
+                citiesVisited[currentCity] = true;
+                route = new List<int>();
+                route.Add(currentCity);
+
+                if (currentCity >= Cities.Length) //if all greedy attempts don't solve it, use the default solution
+                {
+                    defaultSolveProblem();
+                    break;
+                }
+                //begin at city start and find a route to all cities
+                //we connect to every city and run through this n times which contains a O(n) method so it is O(n^2) with the space complexity of O(n) for arrays and list
+                for (int i = start; i < Cities.Length - 1; i++)
+                {
+                    min = double.PositiveInfinity;
+                    tempIndex = -1;
+                    //look at the route from our currentCity all available cities
+                    //on average, we will run through this for loop half the time or O(n/2) which is O(n) speed complexity with the same size complexity (for cities visited)
+                    for (int j = 0; j < Cities.Length; j++)
+                    {
+                        //skip the routes where we have already gone
+                        if (citiesVisited[j])
+                            continue;
+                        tempCost = Cities[currentCity].costToGetTo(Cities[j]);
+                        //if the cost to the new city is cheaper, remember it
+                        if (min > tempCost)
+                        {
+                            min = tempCost;
+                            tempIndex = j;
+                        }
+                    }
+                    //if the smallest route we found was infinity, we need to try to start in a different city
+                    if (min == double.PositiveInfinity)
+                    {
+                        i = Cities.Length;
+                        fail = true;
+                    }
+                    else //otherwise it is a valid route and we remember it
+                    {
+                        citiesVisited[tempIndex] = true;
+                        route.Add(tempIndex);
+                        currentCity = tempIndex;
+                    }
+                }
+
+
+                for (int i = 0; i < start; i++)
+                {
+                    min = double.PositiveInfinity;
+                    tempIndex = -1;
+                    //look at the route from our currentCity all available cities
+                    //on average, we will run through this for loop half the time or O(n/2) which is O(n) speed complexity with the same size complexity (for cities visited)
+                    for (int j = 0; j < Cities.Length; j++)
+                    {
+                        //skip the routes where we have already gone
+                        if (citiesVisited[j])
+                            continue;
+                        tempCost = Cities[currentCity].costToGetTo(Cities[j]);
+                        //if the cost to the new city is cheaper, remember it
+                        if (min > tempCost)
+                        {
+                            min = tempCost;
+                            tempIndex = j;
+                        }
+                    }
+                    //if the smallest route we found was infinity, we need to try to start in a different city
+                    if (min == double.PositiveInfinity)
+                    {
+                        i = Cities.Length;
+                        fail = true;
+                    }
+                    else //otherwise it is a valid route and we remember it
+                    {
+                        citiesVisited[tempIndex] = true;
+                        route.Add(tempIndex);
+                        currentCity = tempIndex;
+                    }
+                }
+                //if we found a valid route, we can update the bssf otherwise we'll try a new city to start from
+                if (!fail)
+                    updateBssf(route);
+            } while (costOfBssf() == double.PositiveInfinity || costOfBssf() == -1);
+            return bssf;
         }
 
         public string[] fancySolveProblem()
         {
             string[] results = new string[3];
 
-            // TODO: Add your implementation for your advanced solver here.
+            int population = 10000;
+            int randomnums = 10;
+            List<Link> GlobalBest = new List<Link>();
+            double bestDistance = double.PositiveInfinity;
 
-            results[COST] = "not implemented";    // load results into array here, replacing these dummy values
-            results[TIME] = "-1";
-            results[COUNT] = "-1";
+            List<List<Link>> routes = new List<List<Link>>();
+
+            for(int i = 0; i < Cities.Length; i++)
+            {
+                TSPSolution tsp = GreedyImplementation(i);
+                if((tsp.costOfRoute()) < bestDistance)
+                {
+                    GlobalBest = Linkify(tsp);
+                    bestDistance = tsp.costOfRoute();
+                }
+                routes.Add(Linkify(GreedyImplementation(i)));
+            }
+
+            //Making a bad assumption that default won't return the best solution because that requires rewriting the defaul method
+            for(int i = routes.Count; i< population; i++)
+            {
+                defaultSolveProblem();
+                routes.Add(Linkify(bssf));
+            }
+
+            Random rand = new Random();
+            Stopwatch fancyTimer = new Stopwatch();
+            fancyTimer.Start();
+            while(fancyTimer.Elapsed.Milliseconds < (time_limit*1000))
+            {
+                List<int> GrabRandom = new List<int>();
+                List<double> distances = new List<double>();
+
+                for (int i = 0; i < randomnums; i++)
+                {
+                    GrabRandom.Add(rand.Next(population));
+                    List<Link> ls = routes[GrabRandom[i]];
+                    double distance = 0;
+                    for (int j = 0; j < Cities.Length; j++)
+                    {
+                        distance += Cities[ls[j].first].costToGetTo(Cities[ls[j].second]);
+                    }
+                    distances.Add(distance);
+                }
+
+                //sorting here because copying the GrabRandom array and giant routes array was ridiculous
+
+
+                List<Link> child = crossover(routes[GrabRandom[0]], routes[GrabRandom[1]]);
+                List<Link> worst = routes[GrabRandom[GrabRandom.Count - 1]];
+                double childDistance = 0.0;
+                double worstDistance = 0.0;
+                for(int i = 0; i < Cities.Length; i++)
+                {
+                    childDistance += Cities[child[i].first].costToGetTo(Cities[child[i].second]);
+                    worstDistance += Cities[worst[i].first].costToGetTo(Cities[worst[i].second]);
+                }
+
+                if(childDistance < worstDistance)
+                {
+                    routes[GrabRandom[GrabRandom.Count - 1]] = child;
+                    if (childDistance < bestDistance)
+                    {
+                        GlobalBest = child;
+                        bestDistance = childDistance;
+                    }
+                }
+
+                
+            }
+
+            results[COST] = "" + bestDistance;    // load results into array here, replacing these dummy values
+            results[TIME] = "60.0";
+            results[COUNT] = "1";
 
             return results;
         }
+
+        //Take a tspsolution and make it a list of links
+        private List<Link> Linkify(TSPSolution tsp)
+        {
+            List<Link> route = new List<Link>();
+            City first, second; //Route is an Arraylist of objects and setting them as cities in a single line as a new link was a little crazy
+
+            //Loop through every city and make links from the two cities that are connected
+            for(int i =0; i < tsp.Route.Count - 1; i++)
+            {
+                first = (City)tsp.Route[i];
+                second = (City)tsp.Route[i + 1];
+                route.Add(new Link(first.position, second.position));
+            }
+
+            first = (City)tsp.Route[tsp.Route.Count - 1];
+            second = (City)tsp.Route[0];
+            route.Add(new Link(first.position, second.position)); //Don't forget the loop around
+
+            return route;
+        }
+        
+        
         #endregion
     }
 

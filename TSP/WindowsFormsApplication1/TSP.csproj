@@ -53,6 +53,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="HardMode.cs" />
+    <Compile Include="Link.cs" />
     <Compile Include="PriorityQueue.cs" />
     <Compile Include="ProblemAndSolver.cs" />
     <Compile Include="Program.cs" />

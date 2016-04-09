@@ -1324,68 +1324,20 @@ namespace TSP
         /// Randomly change one of the links in this tour.
         /// </summary>
         /// <param name="rand">Random number generator. We pass around the same random number generator, so that results between runs are consistent.</param>
-        public void Mutate(List<Link> child, Random rand)
+        public List<Link> Mutate(List<Link> child, Random rand)
         {
-            int cityNumber = rand.Next(child.Count);
-            Link link = child[cityNumber];
-            int tmpCityNumber;
-
-            // Find which 2 cities connect to cityNumber, and then connect them directly
-            if (child[link.first].first == cityNumber)   // Conn 1 on Conn 1 link points back to us.
-            {
-                if (child[link.second].first == cityNumber)// Conn 1 on Conn 2 link points back to us.
-                {
-                    tmpCityNumber = link.second;
-                    child[link.second].first = link.first;
-                    child[link.first].first = tmpCityNumber;
-                }
-                else                                                // Conn 2 on Conn 2 link points back to us.
-                {
-                    tmpCityNumber = link.second;
-                    child[link.second].second = link.second;
-                    child[link.first].first = tmpCityNumber;
-                }
-            }
-            else                                                    // Conn 2 on Conn 1 link points back to us.
-            {
-                if (child[link.second].first == cityNumber)// Conn 1 on Conn 2 link points back to us.
-                {
-                    tmpCityNumber = link.second;
-                    child[link.second].first = link.first;
-                    child[link.first].second = tmpCityNumber;
-                }
-                else                                                // Conn 2 on Conn 2 link points back to us.
-                {
-                    tmpCityNumber = link.second;
-                    child[link.second].second = link.first;
-                    child[link.first].first = tmpCityNumber;
-                }
-
-            }
-
-            int replaceCityNumber = -1;
-            do
-            {
-                replaceCityNumber = rand.Next(child.Count);
-            }
-            while (replaceCityNumber == cityNumber);
-            Link replaceLink = child[replaceCityNumber];
-
-            // Now we have to reinsert that city back into the tour at a random location
-            tmpCityNumber = replaceLink.second;
-            link.second = replaceLink.second;
-            link.first = replaceCityNumber;
-            replaceLink.second = cityNumber;
-
-            if (child[tmpCityNumber].first == replaceCityNumber)
-            {
-                child[tmpCityNumber].first = cityNumber;
-            }
-            else
-            {
-                child[tmpCityNumber].second = cityNumber;
-            }
+            ArrayList cities = makeArrayList(child);
+            int chosen = rand.Next(child.Count);
+            City found = (City)cities[chosen];
+            cities.RemoveAt(chosen);
+            int insert = rand.Next(child.Count);
+            cities.Insert(insert, found);
+            TSPSolution possible = new TSPSolution(cities);
+            if (possible.costOfRoute() == double.PositiveInfinity)
+                return null;
+            return Linkify(possible);
         }
+
 
         #endregion
     }

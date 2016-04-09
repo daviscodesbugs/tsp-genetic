@@ -897,28 +897,43 @@ namespace TSP
                 }
 
                 //sorting here because copying the GrabRandom array and giant routes array was ridiculous
+
                 sortedRandom = new List<int>();
-                for(int i = 0; i < randomnums; i++)
+                for (int i = 0; i < randomnums; i++)
                 {
                     sortedRandom.Add(GrabRandom[i]);
                     sortSwap = true;
                     sortPosition = i;
                     while (sortSwap)
                     {
+                        
+
                         sortSwap = false;
-                        if(sortPosition == 0)
+
+                        if (sortPosition == 0)
                         {
                             sortSwap = false;
                         }
                         else if(routeCost(routes[sortedRandom[sortPosition]]) < routeCost(routes[sortedRandom[sortPosition - 1]]) )
                         {
+                            double tempValue = routeCost(routes[sortedRandom[sortPosition]]);
                             tempIndex = sortedRandom[sortPosition];
                             sortedRandom[sortPosition] = sortedRandom[sortPosition - 1];
                             sortedRandom[sortPosition - 1] = tempIndex;
                             sortSwap = true;
+                            sortPosition--;
+                            
                         }
+                        
+                        
                     }
+                    
                 }
+                GrabRandom = sortedRandom;
+
+                
+               
+
 
                 //make the first child
                 child = crossOver(routes[GrabRandom[0]], routes[GrabRandom[1]], rand);
@@ -1003,44 +1018,40 @@ namespace TSP
             return distance;
         }
 
+        private List<Link> createList(List<Link> route)
+        {
+            List<Link> ordered = new List<Link>();
+            ordered.Add(route[0]);
+            for (int i = 0; i < route.Count; i++)
+            {
+                int next = ordered[i].second;
+                for (int j = 0; j < route.Count; j++)
+                {
+                    if (route[j].first == next)
+                        ordered.Add(route[j]);
+                }
+                if (i != (ordered.Count - 2))
+                {
+                    Console.WriteLine("Route");
+                    for (int k = 0; k < route.Count; k++)
+                        Console.Write(route[k].toString() + "\t");
+                    Console.WriteLine("\nOrdered");
+                    for (int k = 0; k < ordered.Count; k++)
+                        Console.Write(ordered[k].toString() + "\t");
+                    return ordered;
+                }
+
+            }
+            return ordered;
+        }
+
         //Make tspsolution from a list of links
         private ArrayList makeArrayList(List<Link> route)
         {
-            int currentCity = 0;
-            ArrayList citiesOrder = new ArrayList(route.Count);
-            for(int i = 0; i < route.Count; i++)
-            {
-                citiesOrder.Add(null);
-            }
-            bool[] linkUsed = new bool[route.Count];
-            citiesOrder[0] = Cities[0];
-            bool cityAdded;
-            for(int i = 1; i < route.Count; i++)
-            {
-                cityAdded = false;
-                for(int j = 0; j < route.Count; j++)
-                {
-                    if (cityAdded)
-                        continue;
-                    if (linkUsed[j])
-                        continue;
-                    if(route[j].first == currentCity)
-                    {
-                        currentCity = route[j].second;
-                        cityAdded = true;
-                        citiesOrder[i] = Cities[currentCity];
-                        linkUsed[j] = true;
-                    }
-                    else if(route[j].second == currentCity)
-                    {
-                        currentCity = route[j].first;
-                        cityAdded = true;
-                        citiesOrder[i] = Cities[currentCity];
-                        linkUsed[j] = true;
-                    }
-                    
-                }
-            }
+            route = createList(route);
+            ArrayList citiesOrder = new ArrayList();
+            for (int i = 0; i < route.Count; i++)
+                citiesOrder.Add(Cities[route[i].first]);
             return citiesOrder;
         }
 
@@ -1068,135 +1079,133 @@ namespace TSP
         private List<Link> crossOver(List<Link> parent1, List<Link> parent2, Random rand)
         {
             List<Link> child = new List<Link>();
+            bool[] visited = new bool[Cities.Length];
+            bool[] left = new bool[Cities.Length];
 
-            for(int i = 0; i < Cities.Length; i++)
+            //get the similar links from the parents
+            Link link;
+            bool stop = false;
+            for (int i = 0; i < parent1.Count; i++)
             {
-                child.Add(new Link(-1, -1));
-            }
-
-            int[] cityUsage = new int[Cities.Length];  // how many links 0-2 that connect to this city
-            int city;                                   // for loop variable
-            int nextCity;                               // the other city in this link
-
-            for (city = 0; city < Cities.Length; city++)
-            {
-                cityUsage[city] = 0;
-            }
-
-            // Take all links that both parents agree on and put them in the child
-            for (city = 0; city < Cities.Length; city++)
-            {
-                if (cityUsage[city] < 2)
+                stop = false;
+                for (int j = 0; j < parent2.Count; j++)
                 {
-                    if (parent1[city].first == parent2[city].first)
+                    if (stop)
                     {
-                        nextCity = parent1[city].first;
-                        if (testConnectionValid(child, cityUsage, city, nextCity))
-                        {
-                            joinCities(child, cityUsage, city, nextCity);
-                        }
+                        j = parent2.Count;
+                        continue;
                     }
-                    if (parent1[city].second == parent2[city].second)
+                    if (parent1[i].compareTo(parent2[j]) == 0) //they are identical links
                     {
-                        nextCity = parent1[city].second;
-                        if (testConnectionValid(child, cityUsage, city, nextCity))
-                        {
-                            joinCities(child, cityUsage, city, nextCity);
-
-                        }
-                    }
-                    if (parent1[city].first == parent2[city].second)
-                    {
-                        nextCity = parent1[city].first;
-                        if (testConnectionValid(child, cityUsage, city, nextCity))
-                        {
-                            joinCities(child, cityUsage, city, nextCity);
-                        }
-                    }
-                    if (parent1[city].second == parent2[city].first)
-                    {
-                        nextCity = parent1[city].second;
-                        if (testConnectionValid(child, cityUsage, city, nextCity))
-                        {
-                            joinCities(child, cityUsage, city, nextCity);
-                        }
+                        link = parent1[i];
+                        child.Add(link);
+                        left[link.first] = true;
+                        visited[link.second] = true;
+                        stop = true;
                     }
                 }
             }
+            
 
-            // The parents don't agree on whats left, so we will alternate between using
-            // links from parent 1 and then parent 2.
-
-            for (city = 0; city < Cities.Length; city++)
+            //make lists of the cities not visited so we can find links in the parents to add
+            int index = 0;
+            List<int> citiesNotVisited = new List<int>();
+            List<int> citiesToCheck = new List<int>();
+            for (int i = 0; i < visited.Length; i++)
             {
-                if (cityUsage[city] < 2)
-                {
-                    if (city % 2 == 1)  // we prefer to use parent 1 on odd cities
-                    {
-                        nextCity = findNextCity(parent1, child, cityUsage, city);
-                        if (nextCity == -1) // but if thats not possible we still go with parent 2
-                        {
-                            nextCity = findNextCity(parent2, child, cityUsage, city); ;
-                        }
-                    }
-                    else // use parent 2 instead
-                    {
-                        nextCity = findNextCity(parent2, child, cityUsage, city);
-                        if (nextCity == -1)
-                        {
-                            nextCity = findNextCity(parent1, child, cityUsage, city);
-                        }
-                    }
-
-                    if (nextCity != -1)
-                    {
-                        joinCities(child, cityUsage, city, nextCity);
-
-                        // not done yet. must have been 0 in above case.
-                        if (cityUsage[city] == 1)
-                        {
-                            if (city % 2 != 1)  // use parent 1 on even cities
-                            {
-                                nextCity = findNextCity(parent1, child, cityUsage, city);
-                                if (nextCity == -1) // use parent 2 instead
-                                {
-                                    nextCity = findNextCity(parent2, child, cityUsage, city);
-                                }
-                            }
-                            else // use parent 2
-                            {
-                                nextCity = findNextCity(parent2, child, cityUsage, city);
-                                if (nextCity == -1)
-                                {
-                                    nextCity = findNextCity(parent1, child, cityUsage, city);
-                                }
-                            }
-
-                            if (nextCity != -1)
-                            {
-                                joinCities(child, cityUsage, city, nextCity);
-                            }
-                        }
-                    }
-                }
+                if (visited[i])
+                    continue;
+                citiesNotVisited.Add(i);
+                citiesToCheck.Add(i);
             }
 
-            // Remaining links must be completely random.
-            // Parent's links would cause multiple disconnected loops.
-            for (city = 0; city < Cities.Length; city++)
+            //alternate between grabbing from parent 1 or parent 2
+            int numOfChecks = citiesNotVisited.Count;
+            for (int i = 0; i < numOfChecks; i++)
             {
-                while (cityUsage[city] < 2)
-                {
-                    do
-                    {
-                        nextCity = rand.Next(Cities.Length);  // pick a random city, until we find one we can link to
-                    } while (!testConnectionValid(child, cityUsage, city, nextCity));
+                index = rand.Next(citiesToCheck.Count);
+                stop = false;
 
-                    joinCities(child, cityUsage, city, nextCity);
+                if(i % 2 == 0)//check parent1 first
+                {
+                    stop = seeIfLinkAvailable(parent1, child, left, visited, citiesToCheck[index]);
+                    //check parent2 if parent1 didn't work
+                    if (!stop)
+                    {
+                        stop = seeIfLinkAvailable(parent2, child, left, visited, citiesToCheck[index]);
+                    }
                 }
+                else //check parent2 first
+                {
+                    stop = seeIfLinkAvailable(parent2, child, left, visited, citiesToCheck[index]);
+                    //check parent1 if parent2 didn't work
+                    if (!stop)
+                    {
+                        stop = seeIfLinkAvailable(parent1, child, left, visited, citiesToCheck[index]);
+                    }
+                }
+
+                if (stop)
+                    citiesNotVisited.Remove(citiesToCheck[index]);
+                citiesToCheck.RemoveAt(index);
+
             }
+
+            //now whatever cities are not connected can be randomly connected
+            for (int i = 0; i < left.Length; i++)
+            {
+                if (left[i])
+                    continue;
+                index = rand.Next(citiesNotVisited.Count);
+                int j = citiesNotVisited[index];
+                link = new Link(i, j);
+                child.Add(link);
+                citiesNotVisited.RemoveAt(index);
+                left[i] = true;
+                visited[j] = true;
+            }
+
+            //there may be loops in the resulting graph
 
             return child;
+        }
+
+        private List<Link> findLinks(List<Link> parent1, List<Link> parent2)
+        {
+            List<Link> foundLinks = new List<Link>();
+
+            for(int i = 0; i < parent1.Count; i++)
+            {
+                for(int j = 0; j < parent2.Count; j++)
+                {
+
+                    if (parent1[i].compareTo(parent2[j]) == 0) //they are identical links
+                        foundLinks.Add(parent1[i]);
+                }
+            }
+            return foundLinks;
+        }
+
+        private bool seeIfLinkAvailable(List<Link> parent, List<Link> child, bool[] left, bool[] visited, int cityToVisit)
+        {
+            
+            Link link;
+            for (int j = 0; j < Cities.Length; j++)
+            {
+                link = parent[j];
+                if (link.second == cityToVisit)
+                {
+                    if (!left[link.first])
+                    {
+                        child.Add(link);
+                        left[link.first] = true;
+                        visited[link.second] = true;
+                        return true;
+                    }
+                }
+
+            }
+            return false;
         }
 
         /// <summary>

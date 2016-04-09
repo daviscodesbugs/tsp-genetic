@@ -35,5 +35,10 @@ namespace TSP
                     return 0;
             return 1;
         }
+
+        public string toString()
+        {
+            return first + ", " + second;
+        }
     }
 }

@@ -1334,7 +1334,7 @@ namespace TSP
         /// Randomly change one of the links in this tour.
         /// </summary>
         /// <param name="rand">Random number generator. We pass around the same random number generator, so that results between runs are consistent.</param>
-        public List<Link> Mutate(List<Link> child, Random rand)
+        public void Mutate(List<Link> child, Random rand)
         {
             ArrayList cities = makeArrayList(child);
             int chosen = rand.Next(child.Count);
@@ -1343,9 +1343,7 @@ namespace TSP
             int insert = rand.Next(child.Count);
             cities.Insert(insert, found);
             TSPSolution possible = new TSPSolution(cities);
-            if (possible.costOfRoute() == double.PositiveInfinity)
-                return null;
-            return Linkify(possible);
+            Linkify(possible);
         }
 
         #endregion

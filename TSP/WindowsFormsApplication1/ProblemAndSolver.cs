@@ -1166,8 +1166,32 @@ namespace TSP
             }
 
             //there may be loops in the resulting graph
+            deloop(child);
+
 
             return child;
+        }
+
+        private void deloop(List<Link> child)
+        {
+            bool loopFound = true;
+            int currentCity;
+            bool[] cityUsed = new bool[Cities.Length]cityUsed();
+            while (loopFound)
+            {
+                currentCity = 0;
+                for(int i = 0; i < Cities.Length; i++)
+                {
+                    
+                    if(child[i].first == currentCity)
+                    {
+                        currentCity = child[i].second;
+                    }
+                    
+                }
+
+
+            }
         }
 
         private List<Link> findLinks(List<Link> parent1, List<Link> parent2)

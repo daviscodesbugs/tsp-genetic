@@ -1152,47 +1152,122 @@ namespace TSP
             }
 
             //now whatever cities are not connected can be randomly connected
+            int k;
             for (int i = 0; i < left.Length; i++)
             {
                 if (left[i])
                     continue;
+                
                 index = rand.Next(citiesNotVisited.Count);
-                int j = citiesNotVisited[index];
-                link = new Link(i, j);
+                k = citiesNotVisited[index];
+                
+                link = new Link(i, k);
                 child.Add(link);
                 citiesNotVisited.RemoveAt(index);
                 left[i] = true;
-                visited[j] = true;
+                visited[k] = true;
             }
 
             //there may be loops in the resulting graph
-            deloop(child);
+            deloop(child, rand);
 
 
             return child;
         }
 
-        private void deloop(List<Link> child)
+        private void deloop(List<Link> child, Random rand)
         {
             bool loopFound = true;
             int currentCity;
-            bool[] cityUsed = new bool[Cities.Length]cityUsed();
+            bool[] cityUsed = new bool[Cities.Length];
+            List<int> citiesInLoop = new List<int>();
+            List<int> citiesNotInLoop = new List<int>();
+            int cityNotInLoop;
+            int cityInLoop;
+            int fromCityInLoop = -1;
+            int toCityNotInLoop = -1;
+            
+
+            for(int i = 1; i < Cities.Length; i++)
+            {
+                citiesNotInLoop.Add(i);
+            }
+
             while (loopFound)
             {
                 currentCity = 0;
-                for(int i = 0; i < Cities.Length; i++)
+                cityUsed[0] = true;
+                citiesInLoop.Add(currentCity);
+                loopFound = false;
+                for (int j = 0; j < Cities.Length - 1; j++)
                 {
-                    
-                    if(child[i].first == currentCity)
+                    for (int i = 0; i < Cities.Length; i++)
                     {
-                        currentCity = child[i].second;
+                        
+                        if (child[i].first == currentCity)
+                        {
+                            if (child[i].second != 0) //no loop
+                            {
+                                currentCity = child[i].second;
+                                citiesInLoop.Add(currentCity);
+                                citiesNotInLoop.Remove(currentCity);
+                                cityUsed[currentCity] = true;
+                                i = Cities.Length;
+                            }
+                            else //loop
+                            {
+                                loopFound = true;
+                                i = Cities.Length;
+                                j = Cities.Length;
+                                continue;
+                            }
+
+                        }
                     }
+                }
+               
+
+                //connect city in loop to city out of the loop
+                if (loopFound)
+                {
+                    //connect random city in loop to one out of loop
+                    cityInLoop = citiesInLoop[rand.Next(citiesInLoop.Count)];
+                    cityNotInLoop = citiesNotInLoop[rand.Next(citiesNotInLoop.Count)];
+
+                    //find link to and from both cities
+                    for(int i = 0; i < child.Count; i++)
+                    {
+                        if(child[i].first == cityInLoop) //from city in loop
+                        {
+                            fromCityInLoop = child[i].second;
+                            child.Remove(child[i]);
+                            i--;
+                        }
+                        if(child[i].second == cityNotInLoop) //to city out of loop
+                        {
+                            toCityNotInLoop = child[i].first;
+                            child.Remove(child[i]);
+                            i--;
+                        }
+                    }
+
+                    //Add new links back in combining loops
+                    child.Add(new Link(cityInLoop, cityNotInLoop));
+                    child.Add(new Link(toCityNotInLoop, fromCityInLoop));
+
+
+
                     
                 }
+                
+
+
 
 
             }
         }
+
+        
 
         private List<Link> findLinks(List<Link> parent1, List<Link> parent2)
         {

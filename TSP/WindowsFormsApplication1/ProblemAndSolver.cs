@@ -836,7 +836,7 @@ namespace TSP
             List<List<Link>> routes = new List<List<Link>>();
 
             
-
+          //create the initial population.  Population number of random routes and a greedy route for each city
             //Making a bad assumption that default won't return the best solution because that requires rewriting the defaul method
             for(int i = routes.Count; i< population; i++)
             {
@@ -850,6 +850,7 @@ namespace TSP
                 TSPSolution tsp = GreedyImplementation(i);
                 if ((tsp.costOfRoute()) < bestDistance)
                 {
+                    //if the found path is awesome, save it as the current best
                     GlobalBest = Linkify(tsp);
                     bestDistance = tsp.costOfRoute();
                     totalUpdates++;
@@ -876,17 +877,19 @@ namespace TSP
             int sortPosition;
             int tempIndex;
 
+            //we used a timer to determine when to stop searching.  We could also have used a number of created generations,
+            //a number of generations without change, or when a certain degree of improvement has been reached
             while (fancyTimer.Elapsed < timeLimit)
             {
-                
 
                 GrabRandom = new List<int>();
 
                 distances = new List<double>();
 
+              //create a selected population of which we will choose our breeders.
                 for (int i = 0; i < randomnums; i++)
                 {
-                    GrabRandom.Add(rand.Next(population));
+                    GrabRandom.Add(rand.Next(routes.Count));
                     ls = routes[GrabRandom[i]];
                     distance = 0;
                     for (int j = 0; j < Cities.Length; j++)
@@ -897,7 +900,9 @@ namespace TSP
                 }
 
                 //sorting here because copying the GrabRandom array and giant routes array was ridiculous
-
+                //routes is unsourced so we need to sort GrabRandom in order to discover the best two solutions
+                //we chose bubble sort because that is what our predessors used and it is fine for such a small sample, if 
+                //our selection size was larger we would probably want to switch to a quick or merge sort
                 sortedRandom = new List<int>();
                 for (int i = 0; i < randomnums; i++)
                 {
@@ -932,13 +937,16 @@ namespace TSP
                 GrabRandom = sortedRandom;
 
                 
-                //make the first child
+                //make the first child by crossing the 2 parents (best tsp solutions in our selection)
                 child = crossOver(routes[GrabRandom[0]], routes[GrabRandom[1]], rand);
+
+                // mutation percent of the time we will mutate the child in hopes of getting something better.
                 if (rand.Next(100) < mutation)
                 {
                     Mutate(child, rand);
                 }
 
+                //determine how good the child was.  If it is better then the worst of the selection, then it replaces it
                 worst = routes[GrabRandom[GrabRandom.Count - 1]];
                 childDistance = 0.0;
                 worstDistance = 0.0;
@@ -968,7 +976,9 @@ namespace TSP
                     
                 }
 
+
                 //crossover again switching order of parents
+                //and if the last child was better then a parent it is used in the crossover instead
                 child = crossOver(routes[GrabRandom[1]], routes[GrabRandom[0]], rand);
                 if (rand.Next(100) < mutation)
                 {
@@ -1005,6 +1015,7 @@ namespace TSP
             return results;
         }
 
+        //a method to take our list of links to calculate the route and determine fitness
         private double routeCost(List<Link> route)
         {
             double distance = 0;
@@ -1015,6 +1026,8 @@ namespace TSP
             return distance;
         }
 
+        //sometime creating routes makes out of whack lists that make route calculation difficult, this method 
+        //puts them in order where a,b is followed by b,c followed by c,d etc.
         private List<Link> createList(List<Link> route)
         {
             List<Link> ordered = new List<Link>();

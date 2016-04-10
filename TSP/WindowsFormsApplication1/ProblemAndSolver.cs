@@ -932,9 +932,6 @@ namespace TSP
                 GrabRandom = sortedRandom;
 
                 
-               
-
-
                 //make the first child
                 child = crossOver(routes[GrabRandom[0]], routes[GrabRandom[1]], rand);
                 if (rand.Next(100) < mutation)
@@ -1243,7 +1240,7 @@ namespace TSP
                             child.Remove(child[i]);
                             i--;
                         }
-                        if(child[i].second == cityNotInLoop) //to city out of loop
+                        else if(child[i].second == cityNotInLoop) //to city out of loop
                         {
                             toCityNotInLoop = child[i].first;
                             child.Remove(child[i]);

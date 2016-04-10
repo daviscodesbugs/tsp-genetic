@@ -871,7 +871,6 @@ namespace TSP
             double childDistance;
             double worstDistance;
             List<int> sortedRandom;
-            bool[] used;
             bool sortSwap;
             int sortPosition;
             int tempIndex;

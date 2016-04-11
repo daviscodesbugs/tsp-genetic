@@ -835,16 +835,8 @@ namespace TSP
 
             List<List<Link>> routes = new List<List<Link>>();
 
-            
-          //create the initial population.  Population number of random routes and a greedy route for each city
-            //Making a bad assumption that default won't return the best solution because that requires rewriting the defaul method
-            for(int i = routes.Count; i< population; i++)
-            {
-                defaultSolveProblem();
-                routes.Add(Linkify(bssf));
-            }
-
             //using greedy
+            TSPSolution tempBestSolution;
             for (int i = 0; i < Cities.Length; i++)
             {
                 TSPSolution tsp = GreedyImplementation(i);
@@ -858,6 +850,21 @@ namespace TSP
                 }
                 routes.Add(Linkify(GreedyImplementation(i)));
             }
+            tempBestSolution = bssf;
+
+            //create the initial population.  Population number of random routes and a greedy route for each city
+            //Making a bad assumption that default won't return the best solution because that requires rewriting the defaul method
+            for (int i = routes.Count; i< population; i++)
+            {
+                defaultSolveProblem();
+                routes.Add(Linkify(bssf));
+                if(bssf.costOfRoute() < tempBestSolution.costOfRoute())
+                {
+                    tempBestSolution = bssf;
+                }
+            }
+            bssf = tempBestSolution;
+            
 
             Random rand = new Random();
             Stopwatch fancyTimer = new Stopwatch();

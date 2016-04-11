@@ -26,7 +26,7 @@ namespace WindowsFormsApplication1
         public PriorityQueue()
         {
             size = 0;
-            heap = new State[100];
+            heap = new State[10000];
         }
 
         //adds a state to the queue to the bottom

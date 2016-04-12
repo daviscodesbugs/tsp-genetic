@@ -868,8 +868,11 @@ namespace TSP
 
             Random rand = new Random();
             Stopwatch fancyTimer = new Stopwatch();
+            Stopwatch bssfFoundTimer = new Stopwatch();
             fancyTimer.Start();
             TimeSpan timeLimit = new TimeSpan(0, 0, time_limit/1000);
+            TimeSpan bssfLimit = new TimeSpan(0, 0, Cities.Length - (Cities.Length / 3));
+            Console.Write(bssfLimit.TotalSeconds.ToString());
             List<int> GrabRandom;
             List<double> distances;
             List<Link> ls;
@@ -882,11 +885,19 @@ namespace TSP
             bool sortSwap;
             int sortPosition;
             int tempIndex;
+            
+            bssfFoundTimer.Start();
 
             //we used a timer to determine when to stop searching.  We could also have used a number of created generations,
             //a number of generations without change, or when a certain degree of improvement has been reached
             while (fancyTimer.Elapsed < timeLimit)
             {
+                
+                if (bssfFoundTimer.Elapsed > bssfLimit)
+                {
+                    Console.Write(bssfFoundTimer.ToString());
+                    break;
+                }
 
                 GrabRandom = new List<int>();
 
@@ -973,6 +984,8 @@ namespace TSP
                         //if child is better than the best solution, replace it
                         if (childDistance < bestDistance)
                         {
+                            Console.Write("found bssf\n");
+                            bssfFoundTimer.Restart();
                             bssf = new TSPSolution(makeArrayList(child));
                             GlobalBest = child;
                             bestDistance = childDistance;
@@ -1005,6 +1018,8 @@ namespace TSP
                     routes[GrabRandom[GrabRandom.Count - 2]] = child;
                     if (childDistance < bestDistance)
                     {
+                        Console.Write("found bssf\n");
+                        bssfFoundTimer.Restart();
                         bssf = new TSPSolution(makeArrayList(child));
                         GlobalBest = child;
                         bestDistance = childDistance;

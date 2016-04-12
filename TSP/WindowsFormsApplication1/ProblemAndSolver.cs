@@ -868,8 +868,11 @@ namespace TSP
 
             Random rand = new Random();
             Stopwatch fancyTimer = new Stopwatch();
+            Stopwatch bssfFoundTimer = new Stopwatch();
             fancyTimer.Start();
             TimeSpan timeLimit = new TimeSpan(0, 0, time_limit/1000);
+            TimeSpan bssfLimit = new TimeSpan(0, 0, Cities.Length - (Cities.Length / 3));
+            Console.Write(bssfLimit.TotalSeconds.ToString());
             List<int> GrabRandom;
             List<double> distances;
             List<Link> ls;
@@ -882,11 +885,19 @@ namespace TSP
             bool sortSwap;
             int sortPosition;
             int tempIndex;
+            
+            bssfFoundTimer.Start();
 
             //we used a timer to determine when to stop searching.  We could also have used a number of created generations,
             //a number of generations without change, or when a certain degree of improvement has been reached
             while (fancyTimer.Elapsed < timeLimit)
             {
+                
+                if (bssfFoundTimer.Elapsed > bssfLimit)
+                {
+                    Console.Write(bssfFoundTimer.ToString());
+                    break;
+                }
 
                 GrabRandom = new List<int>();
 
@@ -973,6 +984,8 @@ namespace TSP
                         //if child is better than the best solution, replace it
                         if (childDistance < bestDistance)
                         {
+                            Console.Write("found bssf\n");
+                            bssfFoundTimer.Restart();
                             bssf = new TSPSolution(makeArrayList(child));
                             GlobalBest = child;
                             bestDistance = childDistance;
@@ -1005,6 +1018,8 @@ namespace TSP
                     routes[GrabRandom[GrabRandom.Count - 2]] = child;
                     if (childDistance < bestDistance)
                     {
+                        Console.Write("found bssf\n");
+                        bssfFoundTimer.Restart();
                         bssf = new TSPSolution(makeArrayList(child));
                         GlobalBest = child;
                         bestDistance = childDistance;
@@ -1209,12 +1224,14 @@ namespace TSP
                 citiesNotInLoop.Add(i);
             }
 
+            //While there are no loops keep looping around
             while (loopFound)
             {
                 currentCity = 0;
                 cityUsed[0] = true;
                 citiesInLoop.Add(currentCity);
                 loopFound = false;
+                //find what cities are in the loop and which are not.
                 for (int j = 0; j < Cities.Length - 1; j++)
                 {
                     for (int i = 0; i < Cities.Length; i++)
@@ -1243,7 +1260,7 @@ namespace TSP
                 }
                
 
-                //connect city in loop to city out of the loop
+                //if there are loops then we will need to break them and make sure there isn't another loop
                 if (loopFound)
                 {
                     //connect random city in loop to one out of loop
@@ -1271,15 +1288,8 @@ namespace TSP
                     child.Add(new Link(cityInLoop, cityNotInLoop));
                     child.Add(new Link(toCityNotInLoop, fromCityInLoop));
 
-
-
-                    
                 }
                 
-
-
-
-
             }
         }
 
@@ -1301,6 +1311,8 @@ namespace TSP
             return foundLinks;
         }
 
+        //This method is designed to see if a link is available.  Given the parent, child what is left and visited, what links 
+        //can be made at random to finish the children.
         private bool seeIfLinkAvailable(List<Link> parent, List<Link> child, bool[] left, bool[] visited, int cityToVisit)
         {
             
@@ -1323,6 +1335,7 @@ namespace TSP
             return false;
         }
 
+        //unused method from our predecessor
         /// <summary>
         /// Determine if it is OK to connect 2 cities given the existing connections in a child tour.
         /// If the two cities can be connected already (witout doing a full tour) then it is an invalid link.
@@ -1396,6 +1409,7 @@ namespace TSP
             return true;
         }
 
+        //unused method from our predecessor
         private void joinCities(List<Link> tour, int[] cityUsage, int city1, int city2)
         {
             // Determine if the [0] or [1] link is available in the tour to make this link.
@@ -1451,14 +1465,14 @@ namespace TSP
         /// <param name="rand">Random number generator. We pass around the same random number generator, so that results between runs are consistent.</param>
         public void Mutate(List<Link> child, Random rand)
         {
-            ArrayList cities = makeArrayList(child);
+            ArrayList cities = makeArrayList(child); //make the List of links into an array of cities, it will be easier to manipulate
             int chosen = rand.Next(child.Count);
             City found = (City)cities[chosen];
-            cities.RemoveAt(chosen);
-            int insert = rand.Next(child.Count);
+            cities.RemoveAt(chosen); //remove the city
+            int insert = rand.Next(child.Count); //insert it randomly else where
             cities.Insert(insert, found);
-            TSPSolution possible = new TSPSolution(cities);
-            Linkify(possible);
+            TSPSolution possible = new TSPSolution(cities); 
+            Linkify(possible); //make it into a List of Links again.
         }
 
         #endregion

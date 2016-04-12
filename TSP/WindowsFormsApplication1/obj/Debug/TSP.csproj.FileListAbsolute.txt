@@ -29,3 +29,12 @@ C:\Users\bcost_000\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplic
 C:\Users\bcost_000\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\obj\Debug\TSP.mainform.resources
 C:\Users\bcost_000\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
 C:\Users\bcost_000\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\obj\Debug\TSP.csproj.GenerateResource.Cache
+C:\Users\Bo\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.exe.config
+C:\Users\Bo\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.exe
+C:\Users\Bo\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.pdb
+C:\Users\Bo\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.exe
+C:\Users\Bo\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.pdb
+C:\Users\Bo\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\obj\Debug\TSP.csprojResolveAssemblyReference.cache
+C:\Users\Bo\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\obj\Debug\TSP.mainform.resources
+C:\Users\Bo\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
+C:\Users\Bo\Documents\GitHub\genetic-algorithm-tsp\TSP\WindowsFormsApplication1\obj\Debug\TSP.csproj.GenerateResource.Cache
